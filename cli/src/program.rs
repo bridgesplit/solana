@@ -36,21 +36,7 @@ use {
         filter::{Memcmp, RpcFilterType},
     },
     solana_sdk::{
-        account::Account,
-        account_utils::StateMut,
-        bpf_loader, bpf_loader_deprecated,
-        bpf_loader_upgradeable::{self, UpgradeableLoaderState},
-        feature_set::FeatureSet,
-        instruction::{Instruction, InstructionError},
-        loader_instruction,
-        message::Message,
-        native_token::Sol,
-        packet::PACKET_DATA_SIZE,
-        pubkey::Pubkey,
-        signature::{keypair_from_seed, read_keypair_file, Keypair, Signature, Signer},
-        system_instruction::{self, SystemError},
-        system_program,
-        transaction::{Transaction, TransactionError},
+        account::Account, account_utils::StateMut, bpf_loader, bpf_loader_deprecated, bpf_loader_upgradeable::{self, UpgradeableLoaderState}, compute_budget::ComputeBudgetInstruction, feature_set::FeatureSet, instruction::{Instruction, InstructionError}, loader_instruction, message::Message, native_token::Sol, packet::PACKET_DATA_SIZE, pubkey::Pubkey, signature::{keypair_from_seed, read_keypair_file, Keypair, Signature, Signer}, system_instruction::{self, SystemError}, system_program, transaction::{Transaction, TransactionError}
     },
     std::{
         fs::File,
@@ -1795,8 +1781,11 @@ fn do_process_program_write_and_deploy(
         )
     };
     let initial_message = if !initial_instructions.is_empty() {
+        let prio_ix = ComputeBudgetInstruction::set_compute_unit_price(100_000);
+        let mut prioritized_ixs = initial_instructions.clone();
+        prioritized_ixs.insert(0, prio_ix);
         Some(Message::new_with_blockhash(
-            &initial_instructions,
+            &prioritized_ixs,
             Some(&config.signers[0].pubkey()),
             &blockhash,
         ))
