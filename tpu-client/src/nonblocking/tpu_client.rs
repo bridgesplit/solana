@@ -542,7 +542,7 @@ where
         progress.total_transactions = transactions.len();
         let mut transaction_errors = vec![None; transactions.len()];
         progress.block_height = self.rpc_client.get_block_height().await?;
-        for expired_blockhash_retries in (0..5).rev() {
+        for expired_blockhash_retries in (0..100).rev() {
             let (blockhash, last_valid_block_height) = self
                 .rpc_client
                 .get_latest_blockhash_with_commitment(self.rpc_client.commitment())
